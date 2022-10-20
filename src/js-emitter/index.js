@@ -91,7 +91,7 @@ class EventEmitter {
 // Set listeners/emitters
 let emitter = new EventEmitter();
 
-function setFavListeners() {
+function setEmitListener() {
   ROOT_NODE.addEventListener('click', function(event) {
     let favID = event.target.dataset.fav;
     let unFavID = event.target.dataset.unfav;
@@ -103,7 +103,7 @@ function setFavListeners() {
   });
 }
 
-setFavListeners();
+setEmitListener();
 
 // Set subscribers
 emitter.subscribe('event:fav', data => {
