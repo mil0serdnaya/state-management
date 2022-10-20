@@ -31,7 +31,17 @@ const setLocalStorage = (data) => {
   window.localStorage.setItem('favProductsCounter', store.favProducts.length);
 }
 
-setLocalStorage(store);
+// Check if favProductsCounter is in localstorage
+const checkStorage = () => {
+  if (window.localStorage.getItem('favProductsCounter') !== null) {
+    return true;
+  }
+  return false;
+}
+
+if(!checkStorage()) {
+  setLocalStorage(store);
+}
 
 // Get counter from localstorage
 let counter = window.localStorage.getItem('favProductsCounter');
@@ -81,20 +91,19 @@ class EventEmitter {
 // Set listeners/emitters
 let emitter = new EventEmitter();
 
-function setFavListeners(products) {
-  products.forEach(product => {
-    let favBtn = document.querySelector(`[data-fav="${product.id}"]`);
-    let unFavBtn = document.querySelector(`[data-unfav="${product.id}"]`);
-    favBtn.addEventListener('click', () => {
-      emitter.emit('event:fav', {id: product.id});
-    });
-    unFavBtn.addEventListener('click', () => {
-      emitter.emit('event:unfav', {id: product.id});
-    });
+function setFavListeners() {
+  ROOT_NODE.addEventListener('click', function(event) {
+    let favID = event.target.dataset.fav;
+    let unFavID = event.target.dataset.unfav;
+    if(favID) {
+      emitter.emit('event:fav', {id: favID});
+      return;
+    }
+    emitter.emit('event:unfav', {id: unFavID});
   });
 }
 
-setFavListeners(PRODUCTS);
+setFavListeners();
 
 // Set subscribers
 emitter.subscribe('event:fav', data => {
