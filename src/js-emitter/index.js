@@ -1,3 +1,8 @@
+const ROOT_NODE = document.querySelector('[data-root]');
+const PRODUCTS_NODE = document.querySelector('[data-root]');
+const COUNTER_NODE = document.querySelector('[data-counter]');
+let lScounter = window.localStorage.getItem('favProductsCounter');
+
 // Store
 const store = {
   products: [
@@ -43,23 +48,18 @@ if(!checkStorage()) {
   setLocalStorage(store);
 }
 
-// Get counter from localstorage
-let counter = window.localStorage.getItem('favProductsCounter');
-
 // Render products to DOM
 const PRODUCTS = store.products;
-const ROOT_NODE = document.querySelector('[data-products]');
-const COUNTER_NODE = document.querySelector('[data-counter]');
 
 function addProductsToDOM(products) {
-  COUNTER_NODE.innerHTML = counter;
+  COUNTER_NODE.innerHTML = lScounter;
   products.forEach(product => {
     let newProductNode = document.createElement('li');
     newProductNode.innerHTML = 
         `<span>${product.name}</span> 
         <button data-fav="${product.id}">&#9829;</button>
         <button data-unfav="${product.id}">unfav</button>`;
-    ROOT_NODE.appendChild(newProductNode);
+    PRODUCTS_NODE.appendChild(newProductNode);
   });
 }
 
@@ -69,11 +69,22 @@ addProductsToDOM(PRODUCTS);
 class EventEmitter {
   constructor() {
     this.events = {};
+    this.called = false;
   }
 
   emit(eventName, data) {
     const event = this.events[eventName];
     if(event) {
+      event.forEach(fn => {
+         fn.call(null, data);
+       });
+     }
+  }
+
+  once(eventName, data) {
+    const event = this.events[eventName];
+    if(event && !this.called) {
+      this.called = true;
       event.forEach(fn => {
          fn.call(null, data);
        });
@@ -95,11 +106,20 @@ function setEmitListener() {
   ROOT_NODE.addEventListener('click', function(event) {
     let favID = event.target.dataset.fav;
     let unFavID = event.target.dataset.unfav;
-    if(favID) {
+    let counter = event.target.dataset.counter;
+
+    if(favID != undefined) {
       emitter.emit('event:fav', {id: favID});
       return;
     }
-    emitter.emit('event:unfav', {id: unFavID});
+    if(counter != undefined) {
+      emitter.emit('event:once', {data: 'once'});
+      return;
+    }
+    if(unFavID != undefined) {
+      emitter.emit('event:unfav', {id: unFavID});
+      return;
+    }
   });
 }
 
@@ -122,4 +142,8 @@ emitter.subscribe('event:unfav', data => {
   setLocalStorage(store);
   let counter = window.localStorage.getItem('favProductsCounter');
   COUNTER_NODE.innerHTML = counter;
+});
+
+emitter.subscribe('event:once', data => {
+  console.log(data);
 });
